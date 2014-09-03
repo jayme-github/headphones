@@ -89,7 +89,7 @@ def searchforalbum(albumid=None, new=False, losslessOnly=False, choose_specific_
 
 def do_sorted_search(album, new, losslessOnly, choose_specific_download=False):
 
-    NZB_PROVIDERS = (headphones.HEADPHONES_INDEXER or headphones.NEWZNAB or headphones.NZBSORG or headphones.OMGWTFNZBS)
+    NZB_PROVIDERS = (headphones.HEADPHONES_INDEXER or headphones.NEWZNAB or headphones.NZBSORG or headphones.OMGWTFNZBS or headphones.NZBCLUB)
     NZB_DOWNLOADERS = (headphones.SAB_HOST or headphones.BLACKHOLE_DIR or headphones.NZBGET_HOST)
     TORRENT_PROVIDERS = (headphones.KAT or headphones.PIRATEBAY or headphones.MININOVA or headphones.WAFFLES or headphones.RUTRACKER or headphones.WHATCD)
 
@@ -549,6 +549,46 @@ def searchNZB(album, new=False, losslessOnly=False, albumlength=None):
                         logger.info('Found %s. Size: %s', title, helpers.bytes_to_mb(size))
                     except Exception as e:
                         logger.exception("Unhandled exception")
+
+    if headphones.NZBCLUB:
+        provider = 'nzbclub'
+        # FIXME: Implement quality filter
+
+        # Request results
+        logger.info('Parsing results from '+ provider)
+
+        headers = { 'User-Agent': USER_AGENT }
+        params = {
+            'q': term,
+            'ig': 2,
+            'st': 5,
+            'sp': 1,
+            'ns': 1
+        }
+
+        data = request.request_feed(
+            url='http://www.nzbclub.com/nzbfeeds.aspx',
+            params=params, headers=headers,
+            timeout=20
+        )
+
+        # Process feed
+        if data:
+            if not len(data.entries):
+                logger.info(u"No results found from nzbs.org for %s" % term)
+            else:
+                for item in data.entries:
+                    try:
+                        link = [l for l in item.links if l['href'].endswith('.nzb')][0]
+                        url = link.get('href')
+                        # FIXME: Do we need to clean the title a bit to produce better directory names?
+                        title = item.title
+                        size = int(link.get('length'))
+
+                        resultlist.append((title, size, url, provider, 'nzb'))
+                        logger.info('Found %s. Size: %s' % (title, helpers.bytes_to_mb(size)))
+                    except Exception as e:
+                        logger.exception("Unhandled exception while parsing feed")
 
     # attempt to verify that this isn't a substring result
     # when looking for "Foo - Foo" we don't want "Foobar"

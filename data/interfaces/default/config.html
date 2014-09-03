@@ -440,6 +440,21 @@
                                     </div>
                                 </div>
                             </fieldset>
+                            <fieldset>
+                                <legend>nzbclub</legend>
+                                <div class="row checkbox">
+                                    <input id="usenzbclub" type="checkbox" name="nzbclub" onclick="initConfigCheckbox($(this));" value="1" ${config['use_nzbclub']} /><label>Use nzbclub</label>
+                                </div>
+                                <div class="config">
+                                    <div class="row">
+					<b>
+						WARNING!<br />
+						Please prepare for false positive download results!<br />
+						This provider is not as accurate as NewzNab providers!
+					</b>
+                                    </div>
+                                </div>
+                            </fieldset>
                         </td>
                         <td>
                             <fieldset>
@@ -1856,6 +1871,7 @@
                 initConfigCheckbox("#usenewznab");
                 initConfigCheckbox("#usenzbsorg");
                 initConfigCheckbox("#useomgwtfnzbs");
+                initConfigCheckbox("#usenzbclub");
 				initConfigCheckbox("#usekat");
                 initConfigCheckbox("#usepiratebay");
                 initConfigCheckbox("#usemininova");
