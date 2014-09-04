@@ -552,7 +552,10 @@ def searchNZB(album, new=False, losslessOnly=False, albumlength=None):
 
     if headphones.NZBCLUB:
         provider = 'nzbclub'
-        # FIXME: Implement quality filter
+        if headphones.PREFERRED_QUALITY == 3 or losslessOnly:
+            term += ' flac'
+        elif headphones.PREFERRED_QUALITY == 0:
+            term += ' -flac'
 
         # Request results
         logger.info('Parsing results from '+ provider)
@@ -566,8 +569,11 @@ def searchNZB(album, new=False, losslessOnly=False, albumlength=None):
             'ns': 1
         }
 
+        # https://www.nzbclub.com/RSS.aspx
+        # To prevent abuse our RSS Feed requests are throttled.
+        # 200 requests allowed every 5 minutes, lower response priority with every request
         data = request.request_feed(
-            url='http://www.nzbclub.com/nzbfeeds.aspx',
+            url='https://www.nzbclub.com/nzbfeeds.aspx',
             params=params, headers=headers,
             timeout=20
         )
@@ -575,18 +581,17 @@ def searchNZB(album, new=False, losslessOnly=False, albumlength=None):
         # Process feed
         if data:
             if not len(data.entries):
-                logger.info(u"No results found from nzbs.org for %s" % term)
+                logger.info(u"No results found from %s for \"%s\"" % (provider, term))
             else:
                 for item in data.entries:
                     try:
                         link = [l for l in item.links if l['href'].endswith('.nzb')][0]
                         url = link.get('href')
-                        # FIXME: Do we need to clean the title a bit to produce better directory names?
                         title = item.title
                         size = int(link.get('length'))
 
                         resultlist.append((title, size, url, provider, 'nzb'))
-                        logger.info('Found %s. Size: %s' % (title, helpers.bytes_to_mb(size)))
+                        logger.info('Found "%s". Size: %s' % (title, helpers.bytes_to_mb(size)))
                     except Exception as e:
                         logger.exception("Unhandled exception while parsing feed")
 
