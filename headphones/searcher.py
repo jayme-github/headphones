@@ -573,7 +573,7 @@ def searchNZB(album, new=False, losslessOnly=False, albumlength=None):
         # To prevent abuse our RSS Feed requests are throttled.
         # 200 requests allowed every 5 minutes, lower response priority with every request
         data = request.request_feed(
-            url='https://www.nzbclub.com/nzbfeeds.aspx',
+            url='https://www.nzbclub.com/nzbrss.aspx',
             params=params, headers=headers,
             timeout=20
         )
