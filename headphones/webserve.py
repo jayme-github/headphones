@@ -1187,6 +1187,7 @@ class WebInterface(object):
             "use_omgwtfnzbs": checked(headphones.CONFIG.OMGWTFNZBS),
             "omgwtfnzbs_uid": headphones.CONFIG.OMGWTFNZBS_UID,
             "omgwtfnzbs_apikey": headphones.CONFIG.OMGWTFNZBS_APIKEY,
+            "use_nzbclub" : checked(headphones.CONFIG.NZBCLUB),
             "preferred_words": headphones.CONFIG.PREFERRED_WORDS,
             "ignored_words": headphones.CONFIG.IGNORED_WORDS,
             "required_words": headphones.CONFIG.REQUIRED_WORDS,
@@ -1401,7 +1402,7 @@ class WebInterface(object):
         checked_configs = [
             "launch_browser", "enable_https", "api_enabled", "use_blackhole", "headphones_indexer",
             "use_newznab", "newznab_enabled", "use_torznab", "torznab_enabled",
-            "use_nzbsorg", "use_omgwtfnzbs", "use_kat", "use_piratebay", "use_oldpiratebay",
+            "use_nzbsorg", "use_omgwtfnzbs", "use_nzbclub", "use_kat", "use_piratebay", "use_oldpiratebay",
             "use_mininova", "use_waffles", "use_rutracker",
             "use_whatcd", "use_strike", "preferred_bitrate_allow_lossless", "detect_bitrate",
             "ignore_clean_releases", "freeze_db", "cue_split", "move_files",

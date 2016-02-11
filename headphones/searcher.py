@@ -237,7 +237,7 @@ def searchforalbum(albumid=None, new=False, losslessOnly=False,
 
 def do_sorted_search(album, new, losslessOnly, choose_specific_download=False):
     NZB_PROVIDERS = (
-    headphones.CONFIG.HEADPHONES_INDEXER or headphones.CONFIG.NEWZNAB or headphones.CONFIG.NZBSORG or headphones.CONFIG.OMGWTFNZBS)
+    headphones.CONFIG.HEADPHONES_INDEXER or headphones.CONFIG.NEWZNAB or headphones.CONFIG.NZBSORG or headphones.CONFIG.OMGWTFNZBS, headphones.CONFIG.NZBCLUB)
     NZB_DOWNLOADERS = (
     headphones.CONFIG.SAB_HOST or headphones.CONFIG.BLACKHOLE_DIR or headphones.CONFIG.NZBGET_HOST)
     TORRENT_PROVIDERS = (
@@ -721,6 +721,51 @@ def searchNZB(album, new=False, losslessOnly=False, albumlength=None,
                         logger.info('Found %s. Size: %s', title, helpers.bytes_to_mb(size))
                     except Exception as e:
                         logger.exception("Unhandled exception")
+
+    if headphones.CONFIG.NZBCLUB:
+        provider = 'nzbclub'
+        if headphones.CONFIG.PREFERRED_QUALITY == 3 or losslessOnly:
+            term += ' flac'
+        elif headphones.CONFIG.PREFERRED_QUALITY == 0:
+            term += ' -flac'
+
+        # Request results
+        logger.info('Parsing results from '+ provider)
+
+        headers = { 'User-Agent': USER_AGENT }
+        params = {
+            'q': term,
+            'ig': 2,
+            'st': 5,
+            'sp': 1,
+            'ns': 1
+        }
+
+        # https://www.nzbclub.com/RSS.aspx
+        # To prevent abuse our RSS Feed requests are throttled.
+        # 200 requests allowed every 5 minutes, lower response priority with every request
+        data = request.request_feed(
+            url='https://www.nzbclub.com/nzbrss.aspx',
+            params=params, headers=headers,
+            timeout=20
+        )
+
+        # Process feed
+        if data:
+            if not len(data.entries):
+                logger.info(u"No results found from %s for \"%s\"" % (provider, term))
+            else:
+                for item in data.entries:
+                    try:
+                        link = [l for l in item.links if l['href'].endswith('.nzb')][0]
+                        url = link.get('href')
+                        title = item.title
+                        size = int(link.get('length'))
+
+                        resultlist.append((title, size, url, provider, 'nzb', True))
+                        logger.info('Found "%s". Size: %s' % (title, helpers.bytes_to_mb(size)))
+                    except Exception as e:
+                        logger.exception("Unhandled exception while parsing feed")
 
     # attempt to verify that this isn't a substring result
     # when looking for "Foo - Foo" we don't want "Foobar"
